@@ -33,7 +33,7 @@ export const matrixTypes: { type: MatrixType; name: string; description: string 
 export const getDefaultValues = (type: MatrixType): number[] => {
   switch (type) {
     case "scale":
-      return [1, 1, 1]; // x, y, z scale factors
+      return [0, 0, 0]; // x, y, z scale factors
     case "rotate":
       return [0, 0, 0]; // x, y, z rotation angles in degrees
     case "translate":
@@ -79,7 +79,7 @@ export const getValueLabels = (type: MatrixType): string[] => {
 export const getSliderProps = (type: MatrixType) => {
   switch (type) {
     case "scale":
-      return { min: 0, max: 5, step: 0.1 };
+      return { min: -4, max: 4, step: 0.1 };
     case "rotate":
       return { min: -180, max: 180, step: 1 };
     case "translate":

@@ -1,9 +1,9 @@
-import { Grid, OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { Grid, MultiMaterial, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
 import { useCombinedMatrix } from "../store/hooks";
-import { Matrix3D, MatrixTransform, createIdentityMatrix } from "../types";
+import { Matrix3D, MatrixTransform, createIdentityMatrix, matrixValueOffsets } from "../types";
 
 const degToRad = (deg: number) => deg * (Math.PI / 180);
 
@@ -11,7 +11,7 @@ const degToRad = (deg: number) => deg * (Math.PI / 180);
 export const createMatrix = (transform: MatrixTransform): Matrix3D => {
   let matrix = new THREE.Matrix4();
 
-  const factoredValues = transform.values.map(value => value * transform.factor);
+  const factoredValues = transform.values.map(value => value * transform.factor + matrixValueOffsets[transform.type]);
 
   switch (transform.type) {
     case "scale": {
@@ -111,10 +111,16 @@ const TransformCube = ({ transform }: { transform: THREE.Matrix4 }) => {
 
   // Use a unit cube (1×1×1) at the origin (0,0,0)
   // The transformation matrix will be applied to it directly
+  // const matrixOffset = new THREE.Matrix4().makeTranslation(0.5, 0.5, 0.5);
+  // const matrix = new THREE.Matrix4().multiplyMatrices(transform, matrixOffset);
+
   return (
     <mesh ref={meshRef} matrixAutoUpdate={false} matrix={transform}>
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color='#c33c5e' wireframe={true} opacity={0.8} transparent={true} />
+      <MultiMaterial>
+        <meshStandardMaterial color='#c33c5e' wireframe={false} opacity={0.2} transparent={true} />
+        <meshStandardMaterial color='#c33c5e' wireframe={true} transparent={false} />
+      </MultiMaterial>
     </mesh>
   );
 };
@@ -134,14 +140,16 @@ const Scene = () => {
       <OrbitControls ref={orbitControlsRef} />
 
       {/* Original grid and axes (before transformation) */}
-      <Grid args={[10, 10]} position={[0, 0, 0]} cellColor='#8c7378' sectionColor='#9c304b' fadeDistance={10} fadeStrength={1}>
+      <Grid args={[10, 10]} position={[0, 0, 0]} cellColor='#111' sectionColor='#111' fadeDistance={10} fadeStrength={1}>
         <meshBasicMaterial transparent opacity={0.2} />
       </Grid>
       <axesHelper args={[1]} />
+      <group matrix={threeMatrix}>
+        <TransformedGrid transform={threeMatrix} />
+        <Axes transform={threeMatrix} />
+      </group>
 
       {/* Transformed grid and axes */}
-      <TransformedGrid transform={threeMatrix} />
-      <Axes transform={threeMatrix} />
 
       {/* Determinant cube */}
       <TransformCube transform={threeMatrix} />

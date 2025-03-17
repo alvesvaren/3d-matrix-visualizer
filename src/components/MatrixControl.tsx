@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MatrixTransform } from "../types";
+import { MatrixTransform, matrixValueOffsets } from "../types";
 import { getSliderProps } from "../utils/matrixUtils";
 import { createMatrix } from "./Scene";
 
@@ -122,11 +122,12 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
             // Standard controls for other matrix types
             values.map((value, idx) => {
               const { min, max, step } = getSliderProps(matrix.type);
+              const offset = matrixValueOffsets[matrix.type];
               return (
                 <div key={idx} className='space-y-1'>
                   <div className='flex justify-between items-center text-sm text-bg-700'>
                     <label>{labels[idx]}</label>
-                    <span className='font-mono'>{formatValue(value)}</span>
+                    <span className='font-mono'>{formatValue(value + offset)}</span>
                   </div>
                   <div className='flex items-center gap-2'>
                     <input

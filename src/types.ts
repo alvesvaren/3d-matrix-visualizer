@@ -17,6 +17,14 @@ export interface Matrix3D {
   elements: number[];
 }
 
+export const matrixValueOffsets = {
+  scale: 1,
+  rotate: 0,
+  translate: 0,
+  shear: 0,
+  custom: 0
+}
+
 // Helper function to create identity matrix
 export const createIdentityMatrix = (): Matrix3D => ({
   elements: [
