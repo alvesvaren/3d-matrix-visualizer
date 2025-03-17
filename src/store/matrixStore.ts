@@ -11,6 +11,7 @@ interface MatrixState {
   removeMatrix: (id: string) => void;
   updateMatrix: (id: string, values: number[], factor: number) => void;
   setGlobalScale: (scale: number) => void;
+  reorderMatrices: (newMatrices: MatrixTransform[]) => void;
   reset: () => void;
 }
 
@@ -41,6 +42,8 @@ export const useMatrixStore = create<MatrixState>(set => ({
         return m;
       }),
     })),
+
+  reorderMatrices: (newMatrices) => set({ matrices: newMatrices }),
 
   setGlobalScale: scale => set({ globalScale: scale }),
 

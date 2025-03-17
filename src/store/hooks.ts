@@ -11,6 +11,7 @@ export const useMatrixActions = () => {
   const removeMatrix = useMatrixStore(state => state.removeMatrix);
   const updateMatrix = useMatrixStore(state => state.updateMatrix);
   const setGlobalScale = useMatrixStore(state => state.setGlobalScale);
+  const reorderMatrices = useMatrixStore(state => state.reorderMatrices);
   const reset = useMatrixStore(state => state.reset);
 
   return {
@@ -18,6 +19,7 @@ export const useMatrixActions = () => {
     removeMatrix,
     updateMatrix,
     setGlobalScale,
+    reorderMatrices,
     reset,
   };
 };

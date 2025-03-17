@@ -129,7 +129,6 @@ const TransformCube = ({ transform }: { transform: THREE.Matrix4 }) => {
 
 const Scene = () => {
   const combinedMatrix = useCombinedMatrix();
-  console.log(combinedMatrix);
 
   const threeMatrix = new THREE.Matrix4().fromArray(combinedMatrix.elements);
 

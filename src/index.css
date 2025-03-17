@@ -137,3 +137,8 @@
     --color-accent-950: #f9f3eb;
   }
 }
+
+/* Add custom transition class for drag-and-drop animation */
+.transition-spacing {
+  transition-property: margin, padding;
+}
