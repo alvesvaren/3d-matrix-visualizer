@@ -13,15 +13,6 @@ export interface MatrixTransform {
   factor: number;
 }
 
-export interface SidebarProps {
-  matrices: MatrixTransform[];
-  addMatrix: (matrix: MatrixTransform) => void;
-  removeMatrix: (id: string) => void;
-  updateMatrix: (id: string, values: number[], scalar?: number) => void;
-  globalScale: number;
-  setGlobalScale: (scale: number) => void;
-}
-
 export interface Matrix3D {
   elements: number[];
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MatrixTransform, multiplyMatrices } from "../types";
+import { MatrixTransform } from "../types";
 import { getSliderProps } from "../utils/matrixUtils";
 import { createMatrix } from "./Scene";
 
@@ -15,8 +15,6 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
   const [isExpanded, setIsExpanded] = useState(true);
   const [values, setValues] = useState<number[]>(matrix.values);
   const [scalar, setScalar] = useState<number>(matrix.factor || 1);
-
-  console.log(matrix);
 
   const handleValueChange = (index: number, newValue: number) => {
     const newValues = [...values];
@@ -89,7 +87,7 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
                 type='range'
                 min={0}
                 max={1}
-                step={0.02}
+                step={0.01}
                 value={scalar}
                 onChange={e => handleScalarChange(parseFloat(e.target.value))}
                 className='w-full h-2 bg-bg-300 rounded-lg appearance-none cursor-pointer'
@@ -100,27 +98,30 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
           {/* Render controls in a grid for custom matrix */}
           {matrix.type === "custom" ? (
             <div className='grid grid-cols-4 gap-2'>
-              {values.map((value, idx) => (
-                <div key={idx} className='space-y-1'>
-                  <div className='flex justify-between items-center text-sm text-bg-700'>
-                    <label className='text-xs'>{labels[idx]}</label>
+              {values.map((value, idx) => {
+                const { min, max, step } = getSliderProps(matrix.type);
+                return (
+                  <div key={idx} className='space-y-1'>
+                    <div className='flex justify-between items-center text-sm text-bg-700'>
+                      <label className='text-xs'>{labels[idx]}</label>
+                    </div>
+                    <input
+                      type='number'
+                      min={min}
+                      max={max}
+                      step={step}
+                      value={value}
+                      onChange={e => handleValueChange(idx, parseFloat(e.target.value))}
+                      className='w-full py-1 px-2 text-sm bg-bg-50 border border-bg-300 rounded'
+                    />
                   </div>
-                  <input
-                    type='number'
-                    min={-10}
-                    max={10}
-                    step={0.1}
-                    value={value}
-                    onChange={e => handleValueChange(idx, parseFloat(e.target.value))}
-                    className='w-full py-1 px-2 text-sm bg-bg-50 border border-bg-300 rounded'
-                  />
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             // Standard controls for other matrix types
             values.map((value, idx) => {
-              const { min, max, step } = getSliderProps(matrix.type, idx);
+              const { min, max, step } = getSliderProps(matrix.type);
               return (
                 <div key={idx} className='space-y-1'>
                   <div className='flex justify-between items-center text-sm text-bg-700'>
@@ -147,7 +148,9 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
           {matrix.type !== "custom" && (
             <div className='mt-3 pt-3 border-t border-bg-300'>
               <div className='text-sm text-bg-700 mb-2'>Matrix:</div>
-              <div className='grid grid-cols-4 gap-1 font-mono text-sm'>{renderMatrixValues(matrix.type, values)}</div>
+              <div className='grid grid-cols-4 gap-1 font-mono text-sm'>
+                <MatrixGrid matrixTransform={matrix} />
+              </div>
             </div>
           )}
 
@@ -158,84 +161,9 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
   );
 };
 
-// Generate matrix cell values based on transformation type
-const renderMatrixValues = (type: string, values: number[]) => {
-  let cells: React.ReactNode[] = [];
-
-  switch (type) {
-    case "scale": {
-      const [sx, sy, sz] = values;
-      cells = [
-        <MatrixCell key='0' value={sx} />,
-        <MatrixCell key='1' value={0} />,
-        <MatrixCell key='2' value={0} />,
-        <MatrixCell key='3' value={0} />,
-        <MatrixCell key='4' value={0} />,
-        <MatrixCell key='5' value={sy} />,
-        <MatrixCell key='6' value={0} />,
-        <MatrixCell key='7' value={0} />,
-        <MatrixCell key='8' value={0} />,
-        <MatrixCell key='9' value={0} />,
-        <MatrixCell key='10' value={sz} />,
-        <MatrixCell key='11' value={0} />,
-        <MatrixCell key='12' value={0} />,
-        <MatrixCell key='13' value={0} />,
-        <MatrixCell key='14' value={0} />,
-        <MatrixCell key='15' value={1} />,
-      ];
-      break;
-    }
-    case "translate": {
-      const [tx, ty, tz] = values;
-      cells = [
-        <MatrixCell key='0' value={1} />,
-        <MatrixCell key='1' value={0} />,
-        <MatrixCell key='2' value={0} />,
-        <MatrixCell key='3' value={tx} />,
-        <MatrixCell key='4' value={0} />,
-        <MatrixCell key='5' value={1} />,
-        <MatrixCell key='6' value={0} />,
-        <MatrixCell key='7' value={ty} />,
-        <MatrixCell key='8' value={0} />,
-        <MatrixCell key='9' value={0} />,
-        <MatrixCell key='10' value={1} />,
-        <MatrixCell key='11' value={tz} />,
-        <MatrixCell key='12' value={0} />,
-        <MatrixCell key='13' value={0} />,
-        <MatrixCell key='14' value={0} />,
-        <MatrixCell key='15' value={1} />,
-      ];
-      break;
-    }
-    case "shear": {
-      const [xy, xz, yx, yz, zx, zy] = values;
-      cells = [
-        <MatrixCell key='0' value={1} />,
-        <MatrixCell key='1' value={yx} />,
-        <MatrixCell key='2' value={zx} />,
-        <MatrixCell key='3' value={0} />,
-        <MatrixCell key='4' value={xy} />,
-        <MatrixCell key='5' value={1} />,
-        <MatrixCell key='6' value={zy} />,
-        <MatrixCell key='7' value={0} />,
-        <MatrixCell key='8' value={xz} />,
-        <MatrixCell key='9' value={yz} />,
-        <MatrixCell key='10' value={1} />,
-        <MatrixCell key='11' value={0} />,
-        <MatrixCell key='12' value={0} />,
-        <MatrixCell key='13' value={0} />,
-        <MatrixCell key='14' value={0} />,
-        <MatrixCell key='15' value={1} />,
-      ];
-      break;
-    }
-    default:
-      cells = Array(16)
-        .fill(0)
-        .map((_, i) => <MatrixCell key={i} value={i % 5 === 0 ? 1 : 0} />);
-  }
-
-  return cells;
+const MatrixGrid = ({ matrixTransform }: { matrixTransform: MatrixTransform }) => {
+  const matrix = createMatrix(matrixTransform);
+  return Array.from(matrix.elements).map((value, idx) => <MatrixCell key={idx} value={value} />);
 };
 
 // Component to display a single matrix cell value

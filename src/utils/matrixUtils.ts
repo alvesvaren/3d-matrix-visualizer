@@ -76,16 +76,16 @@ export const getValueLabels = (type: MatrixType): string[] => {
 };
 
 // Get slider range and step based on matrix type
-export const getSliderProps = (type: MatrixType, valueIndex: number) => {
+export const getSliderProps = (type: MatrixType) => {
   switch (type) {
     case "scale":
-      return { min: 0, max: 3, step: 0.1 };
+      return { min: 0, max: 5, step: 0.1 };
     case "rotate":
       return { min: -180, max: 180, step: 1 };
     case "translate":
       return { min: -5, max: 5, step: 0.1 };
     case "shear":
-      return { min: -2, max: 2, step: 0.1 };
+      return { min: -5, max: 5, step: 0.1 };
     case "custom":
       // For custom matrix, we'll want a larger range
       return { min: -5, max: 5, step: 0.1 };
