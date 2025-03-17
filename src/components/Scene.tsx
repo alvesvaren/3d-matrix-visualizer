@@ -2,7 +2,7 @@ import { Grid, MultiMaterial, OrbitControls, PerspectiveCamera } from "@react-th
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
-import { useCombinedMatrix, useCSSVariable } from "../store/hooks";
+import { useCombinedMatrix, useCSSVariable, useViewOffset } from "../store/hooks";
 import { Matrix3D, MatrixTransform, createIdentityMatrix, matrixValueOffsets } from "../types";
 
 const degToRad = (deg: number) => deg * (Math.PI / 180);
@@ -137,9 +137,20 @@ const Scene = () => {
   const gridMainColor = useCSSVariable("--color-bg-500");
   const gridSectionColor = useCSSVariable("--color-bg-700");
 
+  // We have a sidebar that takes up 1/3 of the screen width
+  // We want to offset the camera position so that the sidebar is visible
+  const viewOffset = useViewOffset();
+  const camera = useRef<THREE.PerspectiveCamera>(null);
+
+  useFrame(() => {
+    if (camera.current) {
+      camera.current.setViewOffset(window.innerWidth, window.innerHeight, viewOffset.offsetX, viewOffset.offsetY, window.innerWidth, window.innerHeight);
+    }
+  });
+
   return (
     <>
-      <PerspectiveCamera makeDefault position={[3, 3, 3]} fov={50} />
+      <PerspectiveCamera ref={camera} makeDefault position={[3, 3, 3]} fov={50} />
       <OrbitControls ref={orbitControlsRef} />
 
       {/* Original grid and axes (before transformation) */}

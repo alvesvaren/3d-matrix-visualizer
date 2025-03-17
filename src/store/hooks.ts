@@ -51,3 +51,20 @@ export function useCSSVariable(variable: string) {
 
   return value;
 }
+
+export const useViewOffset = () => {
+  const [viewOffset, setViewOffset] = useState({ offsetX: 0, offsetY: 0 });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const sidebarWidth = document.querySelector("#sidebar")?.clientWidth || 0;
+      setViewOffset({ offsetX: -sidebarWidth / 2, offsetY: 0 });
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return viewOffset;
+};

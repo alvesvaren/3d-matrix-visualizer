@@ -116,7 +116,7 @@ const Sidebar = () => {
   const activeMatrix = activeId ? matrices.find(m => m.id === activeId) : null;
 
   return (
-    <div className='h-screen bg-bg-200 p-4 overflow-y-auto max-w-96 min-w-96 flex flex-col'>
+    <div className='h-screen p-4 overflow-y-auto max-w-96 min-w-96 flex flex-col backdrop-blur-lg bg-bg-200/30 border-r border-bg-300' id="sidebar">
       <div className='flex-grow'>
         <h1 className='text-2xl font-bold text-primary-600 mb-4'>3D matrix transform visualizer!</h1>
 
