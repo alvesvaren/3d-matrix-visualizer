@@ -2,30 +2,30 @@ import { MatrixType } from "../types";
 
 // Matrix type information for the UI
 export const matrixTypes: { type: MatrixType; name: string; description: string }[] = [
-  { 
-    type: "scale", 
-    name: "Scale", 
-    description: "Scales the object along the X, Y, and Z axes" 
+  {
+    type: "scale",
+    name: "Scale",
+    description: "Scales the object along the X, Y, and Z axes",
   },
-  { 
-    type: "rotate", 
-    name: "Rotate", 
-    description: "Rotates the object around the X, Y, and Z axes" 
+  {
+    type: "rotate",
+    name: "Rotate",
+    description: "Rotates the object around the X, Y, and Z axes",
   },
-  { 
-    type: "translate", 
-    name: "Translate", 
-    description: "Moves the object along the X, Y, and Z axes" 
+  {
+    type: "shear",
+    name: "Shear",
+    description: "Deforms the object by angling its faces",
   },
-  { 
-    type: "shear", 
-    name: "Shear", 
-    description: "Deforms the object by angling its faces" 
+  {
+    type: "translate",
+    name: "Translate",
+    description: "Moves the object along the X, Y, and Z axes",
   },
-  { 
-    type: "custom", 
-    name: "Custom Matrix", 
-    description: "Define a custom 4x4 transformation matrix" 
+  {
+    type: "custom",
+    name: "Custom",
+    description: "Define a custom 4x4 transformation matrix",
   },
 ];
 
@@ -41,12 +41,7 @@ export const getDefaultValues = (type: MatrixType): number[] => {
     case "shear":
       return [0, 0, 0, 0, 0, 0]; // xy, xz, yx, yz, zx, zy
     case "custom":
-      return [
-        1, 0, 0, 0,  
-        0, 1, 0, 0,  
-        0, 0, 1, 0,  
-        0, 0, 0, 1
-      ]; // identity matrix (16 elements)
+      return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]; // identity matrix (16 elements)
     default:
       return [];
   }

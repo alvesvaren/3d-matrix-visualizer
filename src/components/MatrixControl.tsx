@@ -2,16 +2,16 @@ import { useState } from "react";
 import { Matrix3D, MatrixTransform, matrixValueOffsets } from "../types";
 import { getSliderProps } from "../utils/matrixUtils";
 import { createMatrix } from "./Scene";
+import { Slider } from "./ui/Slider";
 
 interface MatrixControlProps {
   matrix: MatrixTransform;
-  index: number;
   labels: string[];
   onUpdate: (values: number[], scalar: number) => void;
   onRemove: () => void;
 }
 
-const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixControlProps) => {
+const MatrixControl = ({ matrix, labels, onUpdate, onRemove }: MatrixControlProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [values, setValues] = useState<number[]>(matrix.values);
   const [scalar, setScalar] = useState<number>(matrix.factor || 1);
@@ -23,10 +23,10 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
     onUpdate(newValues, scalar);
   };
 
-  const handleScalarChange = (newValue: number) => {
-    setScalar(newValue);
+  const handleScalarChange = (newValue: number[]) => {
+    setScalar(newValue[0]);
     // Pass both values and scalar to the update function
-    onUpdate(values, newValue);
+    onUpdate(values, newValue[0]);
   };
 
   // Format value for display
@@ -39,7 +39,7 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
       {/* Header */}
       <div className='bg-primary-600 text-white p-3 flex justify-between items-center cursor-pointer' onClick={() => setIsExpanded(!isExpanded)}>
         <div className='flex items-center'>
-          <span className='font-medium mr-2'>{index}.</span>
+          <span className='font-medium mr-2'>{matrix.id}.</span>
           <span>{matrix.name}</span>
         </div>
         <div className='flex items-center'>
@@ -71,28 +71,8 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
       {/* Controls */}
       {isExpanded && (
         <div className='p-3 space-y-4'>
-          {/* Matrix scalar factor */}
           <div className='space-y-1 mt-2 mb-4'>
-            <div className='flex justify-between items-center text-sm text-bg-700'>
-              <label>Matrix Scalar: {scalar.toFixed(2)}x</label>
-              <button
-                onClick={() => handleScalarChange(1)}
-                className='text-xs bg-primary-500 hover:bg-primary-600 text-white py-1 px-2 rounded transition-colors'
-              >
-                Reset
-              </button>
-            </div>
-            <div className='flex items-center gap-2'>
-              <input
-                type='range'
-                min={0}
-                max={1}
-                step={0.01}
-                value={scalar}
-                onChange={e => handleScalarChange(parseFloat(e.target.value))}
-                className='w-full h-2 bg-bg-300 rounded-lg appearance-none cursor-pointer'
-              />
-            </div>
+            <Slider label='Contribution' showValue value={[scalar]} onValueChange={handleScalarChange} min={0} max={1} />
           </div>
 
           {/* Render controls in a grid for custom matrix */}
@@ -122,19 +102,16 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
               const offset = matrixValueOffsets[matrix.type];
               return (
                 <div key={idx} className='space-y-1'>
-                  <div className='flex justify-between items-center text-sm text-bg-700'>
-                    <label>{labels[idx]}</label>
-                    <span className='font-mono'>{formatValue(value + offset)}</span>
-                  </div>
                   <div className='flex items-center gap-2'>
-                    <input
-                      type='range'
+                    <Slider
+                      label={labels[idx]}
+                      showValue
+                      valueFormat={value => formatValue(value + offset)}
+                      value={[value]}
+                      onValueChange={e => handleValueChange(idx, e[0])}
                       min={min}
                       max={max}
                       step={step}
-                      value={value}
-                      onChange={e => handleValueChange(idx, parseFloat(e.target.value))}
-                      className='w-full h-2 bg-bg-300 rounded-lg appearance-none cursor-pointer'
                     />
                   </div>
                 </div>
