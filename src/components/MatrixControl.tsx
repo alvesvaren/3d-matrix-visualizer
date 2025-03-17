@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MatrixTransform, matrixValueOffsets } from "../types";
+import { Matrix3D, MatrixTransform, matrixValueOffsets } from "../types";
 import { getSliderProps } from "../utils/matrixUtils";
 import { createMatrix } from "./Scene";
 
@@ -149,9 +149,7 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
           {matrix.type !== "custom" && (
             <div className='mt-3 pt-3 border-t border-bg-300'>
               <div className='text-sm text-bg-700 mb-2'>Matrix:</div>
-              <div className='grid grid-cols-4 gap-1 font-mono text-sm'>
-                <MatrixGrid matrixTransform={matrix} />
-              </div>
+              <MatrixGrid matrix={createMatrix(matrix)} />
             </div>
           )}
 
@@ -162,14 +160,20 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
   );
 };
 
-const MatrixGrid = ({ matrixTransform }: { matrixTransform: MatrixTransform }) => {
-  const matrix = createMatrix(matrixTransform);
-  return Array.from(matrix.elements).map((value, idx) => <MatrixCell key={idx} value={value} />);
+export const MatrixGrid = ({ matrix }: { matrix: Matrix3D }) => {
+  const cells = Array.from(matrix.elements).map((value, idx) => <MatrixCell key={idx} value={value} />);
+  return <div className='grid grid-cols-4 gap-1 font-mono text-sm'>{cells}</div>;
 };
 
 // Component to display a single matrix cell value
 const MatrixCell = ({ value }: { value: number }) => {
-  return <div className='bg-bg-200 text-center py-1 rounded'>{value.toFixed(1).replace(/\.0$/, "")}</div>;
+  const [int, frac] = value.toFixed(2).split(".");
+  return (
+    <div className='bg-bg-200 text-bg-500 text-center py-1 rounded'>
+      <span className='text-bg-700 font-bold'>{int}</span>
+      {frac !== "00" && `.${frac}`}
+    </div>
+  );
 };
 
 export default MatrixControl;
