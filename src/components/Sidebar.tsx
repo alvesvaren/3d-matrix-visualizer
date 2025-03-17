@@ -171,13 +171,36 @@ const Sidebar = () => {
           {/* Drag overlay to show while dragging */}
           <DragOverlay>
             {activeMatrix ? (
-              <div className="opacity-80">
-                <MatrixControl
-                  matrix={activeMatrix}
-                  labels={getValueLabels(activeMatrix.type)}
-                  onUpdate={(values, scalar) => updateMatrix(activeMatrix.id, values, scalar)}
-                  onRemove={() => removeMatrix(activeMatrix.id)}
-                />
+              <div className="opacity-80" style={{ width: '100%' }}>
+                {/* Override the matrix control to always be collapsed while dragging */}
+                <div className='bg-bg-100 rounded-lg shadow overflow-hidden'>
+                  <div className='bg-primary-600 text-accent-50 p-3 flex justify-between items-center'>
+                    <div className='flex items-center'>
+                      <span className='font-bold mr-2'>{activeMatrix.id}</span>
+                      <span className="text-primary-200">{activeMatrix.name}</span>
+                    </div>
+                    <div className='flex items-center'>
+                      <Button
+                        variant='ghost'
+                        className='p-1 hover:bg-primary-500 rounded invisible'
+                      >
+                        <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                        </svg>
+                      </Button>
+                      <span className='ml-2'>
+                        <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+                        </svg>
+                      </span>
+                      <span className='ml-2 cursor-grab'>
+                        <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 8h16M4 16h16' />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : null}
           </DragOverlay>
@@ -188,6 +211,7 @@ const Sidebar = () => {
         <Button
           variant='accent'
           fullWidth
+          className='mt-4'
           onClick={() => {
             matrices.forEach(m => removeMatrix(m.id));
           }}
