@@ -1,8 +1,8 @@
-import { Grid, MultiMaterial, OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { Grid, MultiMaterial, OrbitControls, PerspectiveCamera, Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
-import { useCombinedMatrix, useCSSVariable, useViewOffset } from "../store/hooks";
+import { useCombinedMatrix, useCSSVariable, usePref, useViewOffset } from "../store/hooks";
 import { Matrix3D, MatrixTransform, createIdentityMatrix, matrixValueOffsets } from "../types";
 
 const degToRad = (deg: number) => deg * (Math.PI / 180);
@@ -69,12 +69,22 @@ const Axes = ({ transform }: { transform: THREE.Matrix4 }) => {
   // Z-axis (blue)
   const zAxisRef = useRef<THREE.ArrowHelper>(null);
 
+  // Refs for the text labels
+  const xLabelRef = useRef<THREE.Group>(null);
+  const yLabelRef = useRef<THREE.Group>(null);
+  const zLabelRef = useRef<THREE.Group>(null);
+
   useFrame(() => {
     if (xAxisRef.current && yAxisRef.current && zAxisRef.current) {
-      // Apply the transformation matrix
-      xAxisRef.current.setDirection(new THREE.Vector3(1, 0, 0).applyMatrix4(transform).normalize());
-      yAxisRef.current.setDirection(new THREE.Vector3(0, 1, 0).applyMatrix4(transform).normalize());
-      zAxisRef.current.setDirection(new THREE.Vector3(0, 0, 1).applyMatrix4(transform).normalize());
+      // Get transformed direction vectors
+      const xDir = new THREE.Vector3(1, 0, 0).applyMatrix4(transform).normalize();
+      const yDir = new THREE.Vector3(0, 1, 0).applyMatrix4(transform).normalize();
+      const zDir = new THREE.Vector3(0, 0, 1).applyMatrix4(transform).normalize();
+
+      // Apply the transformation matrix to arrows
+      xAxisRef.current.setDirection(xDir);
+      yAxisRef.current.setDirection(yDir);
+      zAxisRef.current.setDirection(zDir);
 
       // Scale the length
       const xLength = new THREE.Vector3(1, 0, 0).applyMatrix4(transform).length();
@@ -84,6 +94,18 @@ const Axes = ({ transform }: { transform: THREE.Matrix4 }) => {
       xAxisRef.current.setLength(xLength);
       yAxisRef.current.setLength(yLength);
       zAxisRef.current.setLength(zLength);
+
+      // Update label positions
+      if (xLabelRef.current && yLabelRef.current && zLabelRef.current) {
+        // Position labels at the end of each axis
+        const xPos = xDir.clone().multiplyScalar(xLength * 1.1);
+        const yPos = yDir.clone().multiplyScalar(yLength * 1.1);
+        const zPos = zDir.clone().multiplyScalar(zLength * 1.1);
+
+        xLabelRef.current.position.copy(xPos);
+        yLabelRef.current.position.copy(yPos);
+        zLabelRef.current.position.copy(zPos);
+      }
     }
   });
 
@@ -92,6 +114,25 @@ const Axes = ({ transform }: { transform: THREE.Matrix4 }) => {
       <arrowHelper ref={xAxisRef} args={[new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 1, 0xc43b58, 0.1, 0.05]} />
       <arrowHelper ref={yAxisRef} args={[new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), 1, 0x6e402b, 0.1, 0.05]} />
       <arrowHelper ref={zAxisRef} args={[new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 1, 0xc3863c, 0.1, 0.05]} />
+
+      {/* Transformed axis labels */}
+      <group ref={xLabelRef}>
+        <Text scale={[0.1, 0.1, 0.1]} color='#c43b58' anchorX='center' anchorY='middle'>
+          x'
+        </Text>
+      </group>
+
+      <group ref={yLabelRef}>
+        <Text scale={[0.1, 0.1, 0.1]} color='#6e402b' anchorX='center' anchorY='middle'>
+          y'
+        </Text>
+      </group>
+
+      <group ref={zLabelRef}>
+        <Text scale={[0.1, 0.1, 0.1]} color='#c3863c' anchorX='center' anchorY='middle'>
+          z'
+        </Text>
+      </group>
     </>
   );
 };
@@ -129,6 +170,12 @@ const TransformCube = ({ transform }: { transform: THREE.Matrix4 }) => {
 
 const Scene = () => {
   const combinedMatrix = useCombinedMatrix();
+  const showOriginalAxis = usePref("originalAxis");
+  const showTransformedAxis = usePref("transformedAxis");
+  const showLabels = usePref("labels");
+  const showDeterminant = usePref("determinant");
+  const showOriginalGrid = usePref("originalGrid");
+  const showTransformedGrid = usePref("transformedGrid");
 
   const threeMatrix = new THREE.Matrix4().fromArray(combinedMatrix.elements);
 
@@ -154,19 +201,35 @@ const Scene = () => {
       <OrbitControls ref={orbitControlsRef} />
 
       {/* Original grid and axes (before transformation) */}
-      <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={10} fadeStrength={1}>
-        <meshBasicMaterial transparent opacity={0.2} />
-      </Grid>
-      <axesHelper args={[1]} />
+      {showOriginalGrid && (
+        <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={10} fadeStrength={1}>
+          <meshBasicMaterial transparent opacity={0.2} />
+        </Grid>
+      )}
+      {showOriginalAxis && <axesHelper args={[1]} />}
+
+      {/* Original axis labels */}
+      {showLabels && (
+        <>
+          <Text position={[1.1, 0, 0]} scale={[0.1, 0.1, 0.1]} color='red' anchorX='center' anchorY='middle'>
+            x
+          </Text>
+          <Text position={[0, 1.1, 0]} scale={[0.1, 0.1, 0.1]} color='green' anchorX='center' anchorY='middle'>
+            y
+          </Text>
+          <Text position={[0, 0, 1.1]} scale={[0.1, 0.1, 0.1]} color='blue' anchorX='center' anchorY='middle'>
+            z
+          </Text>
+        </>
+      )}
+
       <group matrix={threeMatrix}>
-        <TransformedGrid transform={threeMatrix} />
-        <Axes transform={threeMatrix} />
+        {showTransformedGrid && <TransformedGrid transform={threeMatrix} />}
+        {showTransformedAxis && <Axes transform={threeMatrix} />}
       </group>
 
-      {/* Transformed grid and axes */}
-
       {/* Determinant cube */}
-      <TransformCube transform={threeMatrix} />
+      {showDeterminant && <TransformCube transform={threeMatrix} />}
 
       {/* Environment lighting */}
       <ambientLight intensity={0.5} />

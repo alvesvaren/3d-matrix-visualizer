@@ -2,18 +2,20 @@ import { useState } from "react";
 import { Matrix3D, MatrixTransform, matrixValueOffsets } from "../types";
 import { getSliderProps } from "../utils/matrixUtils";
 import { createMatrix } from "./Scene";
-import { Slider } from "./ui/Slider";
 import { Button } from "./ui/Button";
+import { Slider } from "./ui/Slider";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, TriggerIcon } from "./ui/Collapsible";
 
 interface MatrixControlProps {
   matrix: MatrixTransform;
   labels: string[];
   onUpdate: (values: number[], scalar: number) => void;
   onRemove: () => void;
+  dragHandleProps?: Record<string, any>;
 }
 
-const MatrixControl = ({ matrix, labels, onUpdate, onRemove }: MatrixControlProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+const MatrixControl = ({ matrix, labels, onUpdate, onRemove, dragHandleProps }: MatrixControlProps) => {
+  const [isOpen, setIsOpen] = useState(true);
   const [values, setValues] = useState<number[]>(matrix.values);
   const [scalar, setScalar] = useState<number>(matrix.factor || 1);
 
@@ -36,12 +38,12 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove }: MatrixControlProp
   };
 
   return (
-    <div className='bg-bg-100 rounded-lg overflow-hidden'>
-      {/* Header */}
-      <div className='bg-primary-600 text-accent-50 p-3 flex justify-between items-center cursor-pointer' onClick={() => setIsExpanded(!isExpanded)}>
+    <Collapsible className='group' open={isOpen} onOpenChange={setIsOpen}>
+      {/* Custom trigger element */}
+      <CollapsibleTrigger>
         <div className='flex items-center'>
           <span className='font-bold mr-2'>{matrix.id}</span>
-          <span className="text-primary-200">{matrix.name}</span>
+          <span className='text-primary-200'>{matrix.name}</span>
         </div>
         <div className='flex items-center'>
           <Button
@@ -56,28 +58,16 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove }: MatrixControlProp
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
             </svg>
           </Button>
-          <span className='ml-2'>
-            {isExpanded ? (
-              <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 15l7-7 7 7' />
-              </svg>
-            ) : (
-              <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
-              </svg>
-            )}
-          </span>
-          {/* Drag handle icon */}
-          <span className='ml-2 cursor-grab' title="Drag to reorder" onClick={e => e.stopPropagation()}>
+          <TriggerIcon />
+          <span className='ml-2 cursor-grab' title='Drag to reorder' onClick={e => e.stopPropagation()} {...dragHandleProps}>
             <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 8h16M4 16h16' />
             </svg>
           </span>
         </div>
-      </div>
+      </CollapsibleTrigger>
 
-      {/* Controls */}
-      {isExpanded && (
+      <CollapsibleContent className='no-animation'>
         <div className='p-3 space-y-4'>
           <div className='space-y-1 mt-2 mb-4'>
             <Slider label='Contribution' showValue value={[scalar]} onValueChange={handleScalarChange} min={0} max={1} />
@@ -97,7 +87,7 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove }: MatrixControlProp
                       step={step}
                       value={value}
                       onChange={e => handleValueChange(idx, parseFloat(e.target.value))}
-                      className='w-full py-1 px-2 text-sm bg-bg-50 border border-bg-300 rounded'
+                      className='w-full py-1 px-2 text-sm text-bg-700 bg-bg-50 border border-bg-200/70 rounded'
                     />
                   </div>
                 );
@@ -137,8 +127,8 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove }: MatrixControlProp
 
           {/* For custom matrices, no need to render since the inputs already show the matrix */}
         </div>
-      )}
-    </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
 

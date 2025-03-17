@@ -2,9 +2,18 @@ import { create } from "zustand";
 import { applyTransformationFactor, createMatrix } from "../components/Scene";
 import { Matrix3D, MatrixTransform, calculateDeterminant, createIdentityMatrix, multiplyMatrices } from "../types";
 
-interface MatrixState {
+export interface MatrixState {
   matrices: MatrixTransform[];
   globalScale: number;
+
+  prefs: {
+    originalAxis: boolean;
+    transformedAxis: boolean;
+    labels: boolean;
+    determinant: boolean;
+    originalGrid: boolean;
+    transformedGrid: boolean;
+  };
 
   // Actions
   addMatrix: (matrix: MatrixTransform) => void;
@@ -12,12 +21,21 @@ interface MatrixState {
   updateMatrix: (id: string, values: number[], factor: number) => void;
   setGlobalScale: (scale: number) => void;
   reorderMatrices: (newMatrices: MatrixTransform[]) => void;
+  setPref: (pref: keyof MatrixState["prefs"], value: boolean) => void;
   reset: () => void;
 }
 
 export const useMatrixStore = create<MatrixState>(set => ({
   matrices: [],
   globalScale: 1,
+  prefs: {
+    originalAxis: true,
+    transformedAxis: true,
+    labels: false,
+    determinant: true,
+    originalGrid: true,
+    transformedGrid: true,
+  },
 
   addMatrix: matrix =>
     set(state => ({
@@ -43,11 +61,13 @@ export const useMatrixStore = create<MatrixState>(set => ({
       }),
     })),
 
-  reorderMatrices: (newMatrices) => set({ matrices: newMatrices }),
+  reorderMatrices: newMatrices => set({ matrices: newMatrices }),
 
   setGlobalScale: scale => set({ globalScale: scale }),
 
   reset: () => set({ matrices: [], globalScale: 1 }),
+
+  setPref: (pref, value) => set(state => ({ prefs: { ...state.prefs, [pref]: value } })),
 }));
 
 interface MatrixCalculationsState {

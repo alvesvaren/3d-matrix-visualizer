@@ -1,15 +1,16 @@
-import { useCombinedMatrix, useDeterminant, useMatrixContext } from "../store/hooks";
+import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useState } from "react";
+import { useCombinedMatrix, useDeterminant, useMatrixContext, useSetPref } from "../store/hooks";
 import { MatrixTransform, MatrixType } from "../types";
 import { getDefaultValues, getValueLabels, matrixTypes } from "../utils/matrixUtils";
 import MatrixControl, { MatrixGrid } from "./MatrixControl";
 import { Button } from "./ui/Button";
+import { Checkbox } from "./ui/Checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, TriggerIcon } from "./ui/Collapsible";
 import { Slider } from "./ui/Slider";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { arrayMove } from "@dnd-kit/sortable";
-import { useState } from "react";
 
 // No M because it's used in the result
 const ids = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
@@ -21,7 +22,6 @@ interface SortableMatrixControlProps {
   onRemove: () => void;
 }
 
-// Sortable wrapper component for MatrixControl
 const SortableMatrixControl = ({ matrix, labels, onUpdate, onRemove }: SortableMatrixControlProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } = useSortable({
     id: matrix.id,
@@ -34,14 +34,38 @@ const SortableMatrixControl = ({ matrix, labels, onUpdate, onRemove }: SortableM
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={`${isOver ? "mt-8 transition-spacing duration-200" : "mt-0 transition-spacing duration-200"}`}
-    >
-      <MatrixControl matrix={matrix} labels={labels} onUpdate={onUpdate} onRemove={onRemove} />
+    <div ref={setNodeRef} style={style} className={`${isOver ? "mt-8 transition-spacing duration-200" : "mt-0 transition-spacing duration-200"}`}>
+      <MatrixControl matrix={matrix} labels={labels} onUpdate={onUpdate} onRemove={onRemove} dragHandleProps={{ ...attributes, ...listeners }} />
+    </div>
+  );
+};
+
+const Prefs = () => {
+  const setOriginalAxis = useSetPref("originalAxis");
+  const setTransformedAxis = useSetPref("transformedAxis");
+  const setLabels = useSetPref("labels");
+  const setDeterminant = useSetPref("determinant");
+  const setOriginalGrid = useSetPref("originalGrid");
+  const setTransformedGrid = useSetPref("transformedGrid");
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className='mb-4'>
+      <Collapsible className='group' open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger>
+          <span>Visualization Settings</span>
+
+          <TriggerIcon />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="p-4">
+          <Checkbox label='Show Original Axes' id='originalAxis' onCheckedChange={checked => setOriginalAxis(!!checked)} defaultChecked />
+          <Checkbox label='Show Transformed Axes' id='transformedAxis' onCheckedChange={checked => setTransformedAxis(!!checked)} defaultChecked />
+          <Checkbox label='Show Labels' id='labels' onCheckedChange={checked => setLabels(!!checked)} defaultChecked />
+          <Checkbox label='Show Determinant' id='determinant' onCheckedChange={checked => setDeterminant(!!checked)} defaultChecked />
+          <Checkbox label='Show Original Grid' id='originalGrid' onCheckedChange={checked => setOriginalGrid(!!checked)} defaultChecked />
+          <Checkbox label='Show Transformed Grid' id='transformedGrid' onCheckedChange={checked => setTransformedGrid(!!checked)} defaultChecked />
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 };
@@ -108,7 +132,7 @@ const Sidebar = () => {
         <h1 className='text-2xl font-bold text-primary-600 mb-4'>3D matrix transform visualizer!</h1>
 
         {/* Add new transformation */}
-        <div className='bg-bg-100 rounded-lg p-3 mb-4 flex flex-wrap gap-2'>
+        <div className='mb-4 flex flex-wrap gap-2'>
           {matrixTypes.map(matrixType => (
             <Button key={matrixType.type} className='flex-1' variant='primary' onClick={() => handleAddMatrix(matrixType.type)}>
               {matrixType.name}
@@ -116,8 +140,11 @@ const Sidebar = () => {
           ))}
         </div>
 
+        {/* Preferences section */}
+        <Prefs />
+
         {/* Global scale control */}
-        <div className='bg-bg-100 rounded-lg p-3 mb-4'>
+        <div className='bg-bg-100 rounded-sm p-3 mb-4'>
           <Slider
             label='Global Contribution'
             value={[globalScale]}
@@ -157,8 +184,8 @@ const Sidebar = () => {
             {activeMatrix ? (
               <div className='opacity-80' style={{ width: "100%" }}>
                 {/* Override the matrix control to always be collapsed while dragging */}
-                <div className='bg-bg-100 rounded-lg overflow-hidden'>
-                  <div className='bg-primary-600 text-accent-50 p-3 flex justify-between items-center'>
+                <div className='bg-bg-100 rounded-sm overflow-hidden'>
+                  <div className='bg-primary-600 text-accent-50 p-2 px-3 flex justify-between items-center'>
                     <div className='flex items-center'>
                       <span className='font-bold mr-2'>{activeMatrix.id}</span>
                       <span className='text-primary-200'>{activeMatrix.name}</span>
@@ -174,7 +201,7 @@ const Sidebar = () => {
                           <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
                         </svg>
                       </span>
-                      <span className='ml-2 cursor-grab'>
+                      <span className='ml-2 cursor-grabbing'>
                         <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                           <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 8h16M4 16h16' />
                         </svg>

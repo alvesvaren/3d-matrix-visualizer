@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useMatrixCalculations, useMatrixStore } from "./matrixStore";
+import { MatrixState, useMatrixCalculations, useMatrixStore } from "./matrixStore";
 
 // Convenience hooks for accessing matrix store
 export const useMatrices = () => useMatrixStore(state => state.matrices);
@@ -38,6 +38,12 @@ export const useMatrixContext = () => {
     globalScale,
     ...actions,
   };
+};
+
+export const usePref = (pref: keyof MatrixState["prefs"]) => useMatrixStore(state => state.prefs[pref]);
+export const useSetPref = (pref: keyof MatrixState["prefs"]) => {
+  const func = useMatrixStore(state => state.setPref);
+  return (state: boolean) => func(pref, state);
 };
 
 export function useCSSVariable(variable: string) {
