@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { applyTransformationFactor, createMatrix } from "../components/Scene";
 import { Matrix3D, MatrixTransform, calculateDeterminant, createIdentityMatrix, multiplyMatrices } from "../types";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface MatrixState {
   matrices: MatrixTransform[];
@@ -25,50 +26,58 @@ export interface MatrixState {
   reset: () => void;
 }
 
-export const useMatrixStore = create<MatrixState>(set => ({
-  matrices: [],
-  globalScale: 1,
-  prefs: {
-    originalAxis: true,
-    transformedAxis: true,
-    labels: false,
-    determinant: true,
-    originalGrid: true,
-    transformedGrid: true,
-  },
+export const useMatrixStore = create<MatrixState>()(
+  persist(
+    set => ({
+      matrices: [],
+      globalScale: 1,
+      prefs: {
+        originalAxis: true,
+        transformedAxis: true,
+        labels: false,
+        determinant: true,
+        originalGrid: true,
+        transformedGrid: true,
+      },
 
-  addMatrix: matrix =>
-    set(state => ({
-      matrices: [...state.matrices, matrix],
-    })),
+      addMatrix: matrix =>
+        set(state => ({
+          matrices: [...state.matrices, matrix],
+        })),
 
-  removeMatrix: id =>
-    set(state => ({
-      matrices: state.matrices.filter(m => m.id !== id),
-    })),
+      removeMatrix: id =>
+        set(state => ({
+          matrices: state.matrices.filter(m => m.id !== id),
+        })),
 
-  updateMatrix: (id, values, factor) =>
-    set(state => ({
-      matrices: state.matrices.map(m => {
-        if (m.id === id) {
-          return {
-            ...m,
-            factor,
-            values,
-          };
-        }
-        return m;
-      }),
-    })),
+      updateMatrix: (id, values, factor) =>
+        set(state => ({
+          matrices: state.matrices.map(m => {
+            if (m.id === id) {
+              return {
+                ...m,
+                factor,
+                values,
+              };
+            }
+            return m;
+          }),
+        })),
 
-  reorderMatrices: newMatrices => set({ matrices: newMatrices }),
+      reorderMatrices: newMatrices => set({ matrices: newMatrices }),
 
-  setGlobalScale: scale => set({ globalScale: scale }),
+      setGlobalScale: scale => set({ globalScale: scale }),
 
-  reset: () => set({ matrices: [], globalScale: 1 }),
+      reset: () => set({ matrices: [], globalScale: 1 }),
 
-  setPref: (pref, value) => set(state => ({ prefs: { ...state.prefs, [pref]: value } })),
-}));
+      setPref: (pref, value) => set(state => ({ prefs: { ...state.prefs, [pref]: value } })),
+    }),
+    {
+      name: "matrix-store",
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
 
 interface MatrixCalculationsState {
   determinant: number;

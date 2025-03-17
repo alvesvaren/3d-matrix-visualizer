@@ -3,8 +3,8 @@ import { Matrix3D, MatrixTransform, matrixValueOffsets } from "../types";
 import { getSliderProps } from "../utils/matrixUtils";
 import { createMatrix } from "./Scene";
 import { Button } from "./ui/Button";
-import { Slider } from "./ui/Slider";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger, TriggerIcon } from "./ui/Collapsible";
+import { Slider } from "./ui/Slider";
 
 interface MatrixControlProps {
   matrix: MatrixTransform;
@@ -15,7 +15,7 @@ interface MatrixControlProps {
 }
 
 const MatrixControl = ({ matrix, labels, onUpdate, onRemove, dragHandleProps }: MatrixControlProps) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const [values, setValues] = useState<number[]>(matrix.values);
   const [scalar, setScalar] = useState<number>(matrix.factor || 1);
 
