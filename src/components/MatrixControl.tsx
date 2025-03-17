@@ -102,9 +102,6 @@ const MatrixControl = ({ matrix, index, labels, onUpdate, onRemove }: MatrixCont
                 const { min, max, step } = getSliderProps(matrix.type);
                 return (
                   <div key={idx} className='space-y-1'>
-                    <div className='flex justify-between items-center text-sm text-bg-700'>
-                      <label className='text-xs'>{labels[idx]}</label>
-                    </div>
                     <input
                       type='number'
                       min={min}

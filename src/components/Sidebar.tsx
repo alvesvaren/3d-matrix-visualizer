@@ -26,7 +26,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className='w-80 h-screen bg-bg-200 p-4 overflow-y-auto flex flex-col'>
+    <div className='h-screen bg-bg-200 p-4 overflow-y-auto max-w-96 min-w-96 flex flex-col'>
       <div className='flex-grow'>
         <h1 className='text-2xl font-bold text-primary-600 mb-4'>Matrix Transformations</h1>
 
@@ -78,12 +78,9 @@ const Sidebar = () => {
       {matrices.length > 0 && (
         <div className='mt-4 pt-4 border-t border-bg-300'>
           <button
-            className='w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition-colors'
+            className='w-full bg-accent-600 hover:bg-accent-700 cursor-pointer text-white py-2 px-4 rounded transition-colors'
             onClick={() => {
-              if (confirm("Are you sure you want to clear all transformations?")) {
-                // Remove all matrices
-                matrices.forEach(m => removeMatrix(m.id));
-              }
+              matrices.forEach(m => removeMatrix(m.id));
             }}
           >
             Clear All

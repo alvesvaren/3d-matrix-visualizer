@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useMatrixCalculations, useMatrixStore } from "./matrixStore";
 
 // Convenience hooks for accessing matrix store
@@ -36,3 +37,15 @@ export const useMatrixContext = () => {
     ...actions,
   };
 };
+
+export function useCSSVariable(variable: string) {
+  const [value, setValue] = useState(getComputedStyle(document.documentElement).getPropertyValue(variable));
+
+  useEffect(() => {
+    const handleChange = () => setValue(getComputedStyle(document.documentElement).getPropertyValue(variable));
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", handleChange);
+    return () => window.matchMedia("(prefers-color-scheme: dark)").removeEventListener("change", handleChange);
+  }, []);
+
+  return value;
+}

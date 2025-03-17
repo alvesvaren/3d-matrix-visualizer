@@ -2,7 +2,7 @@ import { Grid, MultiMaterial, OrbitControls, PerspectiveCamera } from "@react-th
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
-import { useCombinedMatrix } from "../store/hooks";
+import { useCombinedMatrix, useCSSVariable } from "../store/hooks";
 import { Matrix3D, MatrixTransform, createIdentityMatrix, matrixValueOffsets } from "../types";
 
 const degToRad = (deg: number) => deg * (Math.PI / 180);
@@ -98,9 +98,11 @@ const Axes = ({ transform }: { transform: THREE.Matrix4 }) => {
 
 // Component for drawing the transformed grid
 const TransformedGrid = ({ transform }: { transform: THREE.Matrix4 }) => {
+  const gridMainColor = useCSSVariable("--color-primary");
+  const gridSectionColor = useCSSVariable("--color-primary-700");
   return (
     <group matrixAutoUpdate={false} matrix={transform}>
-      <Grid args={[10, 10]} position={[0, 0, 0]} cellColor='#8c7378' sectionColor='#c33c5e' fadeDistance={10} fadeStrength={1} />
+      <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={10} fadeStrength={1} />
     </group>
   );
 };
@@ -108,7 +110,7 @@ const TransformedGrid = ({ transform }: { transform: THREE.Matrix4 }) => {
 // Component for drawing the determinant cube
 const TransformCube = ({ transform }: { transform: THREE.Matrix4 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
-
+  const color = useCSSVariable("--color-accent-700");
   // Use a unit cube (1×1×1) at the origin (0,0,0)
   // The transformation matrix will be applied to it directly
   // const matrixOffset = new THREE.Matrix4().makeTranslation(0.5, 0.5, 0.5);
@@ -118,8 +120,8 @@ const TransformCube = ({ transform }: { transform: THREE.Matrix4 }) => {
     <mesh ref={meshRef} matrixAutoUpdate={false} matrix={transform}>
       <boxGeometry args={[1, 1, 1]} />
       <MultiMaterial>
-        <meshStandardMaterial color='#c33c5e' wireframe={false} opacity={0.2} transparent={true} />
-        <meshStandardMaterial color='#c33c5e' wireframe={true} transparent={false} />
+        <meshStandardMaterial color={color} wireframe={false} opacity={0.2} transparent={true} />
+        <meshStandardMaterial color={color} wireframe={true} transparent={false} />
       </MultiMaterial>
     </mesh>
   );
@@ -133,6 +135,8 @@ const Scene = () => {
 
   // Create a reference to allow orbit controls
   const orbitControlsRef = useRef(null);
+  const gridMainColor = useCSSVariable("--color-bg-500");
+  const gridSectionColor = useCSSVariable("--color-bg-700");
 
   return (
     <>
@@ -140,7 +144,7 @@ const Scene = () => {
       <OrbitControls ref={orbitControlsRef} />
 
       {/* Original grid and axes (before transformation) */}
-      <Grid args={[10, 10]} position={[0, 0, 0]} cellColor='#111' sectionColor='#111' fadeDistance={10} fadeStrength={1}>
+      <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={10} fadeStrength={1}>
         <meshBasicMaterial transparent opacity={0.2} />
       </Grid>
       <axesHelper args={[1]} />
