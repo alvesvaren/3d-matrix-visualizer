@@ -36,7 +36,7 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove }: MatrixControlProp
   };
 
   return (
-    <div className='bg-bg-100 rounded-lg shadow overflow-hidden'>
+    <div className='bg-bg-100 rounded-lg overflow-hidden'>
       {/* Header */}
       <div className='bg-primary-600 text-accent-50 p-3 flex justify-between items-center cursor-pointer' onClick={() => setIsExpanded(!isExpanded)}>
         <div className='flex items-center'>

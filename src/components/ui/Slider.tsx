@@ -53,7 +53,7 @@ const Slider = React.forwardRef<React.ElementRef<typeof SliderPrimitive.Root>, S
             <SliderPrimitive.Range className="absolute h-full rounded-full bg-primary-600" />
           </SliderPrimitive.Track>
           <SliderPrimitive.Thumb
-            className="block h-4 w-4 rounded-full border border-primary-700 bg-primary-600 shadow focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 disabled:pointer-events-none disabled:opacity-50"
+            className="block h-4 w-4 rounded-full border border-primary-700 bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 disabled:pointer-events-none disabled:opacity-50"
           />
         </SliderPrimitive.Root>
       </div>

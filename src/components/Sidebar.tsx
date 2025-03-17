@@ -4,11 +4,11 @@ import { getDefaultValues, getValueLabels, matrixTypes } from "../utils/matrixUt
 import MatrixControl, { MatrixGrid } from "./MatrixControl";
 import { Button } from "./ui/Button";
 import { Slider } from "./ui/Slider";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import { arrayMove } from '@dnd-kit/sortable';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { arrayMove } from "@dnd-kit/sortable";
 import { useState } from "react";
 
 // No M because it's used in the result
@@ -23,38 +23,25 @@ interface SortableMatrixControlProps {
 
 // Sortable wrapper component for MatrixControl
 const SortableMatrixControl = ({ matrix, labels, onUpdate, onRemove }: SortableMatrixControlProps) => {
-  const { 
-    attributes, 
-    listeners, 
-    setNodeRef, 
-    transform, 
-    transition,
-    isDragging,
-    isOver,
-  } = useSortable({
-    id: matrix.id
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } = useSortable({
+    id: matrix.id,
   });
-  
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.3 : 1,
   };
-  
+
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
-      {...attributes} 
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
       {...listeners}
-      className={`${isOver ? 'mt-8 transition-spacing duration-200' : 'mt-0 transition-spacing duration-200'}`}
+      className={`${isOver ? "mt-8 transition-spacing duration-200" : "mt-0 transition-spacing duration-200"}`}
     >
-      <MatrixControl
-        matrix={matrix}
-        labels={labels}
-        onUpdate={onUpdate}
-        onRemove={onRemove}
-      />
+      <MatrixControl matrix={matrix} labels={labels} onUpdate={onUpdate} onRemove={onRemove} />
     </div>
   );
 };
@@ -65,18 +52,18 @@ const Sidebar = () => {
   const determinant = useDeterminant();
   const combinedMatrix = useCombinedMatrix();
   const [activeId, setActiveId] = useState<string | null>(null);
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8, // Only start dragging after moving 8px
-      }
+      },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-  
+
   const handleAddMatrix = (type: MatrixType) => {
     const newMatrix: MatrixTransform = {
       id: ids.find(id => !usedIds.includes(id)) || ids[0],
@@ -92,19 +79,19 @@ const Sidebar = () => {
   const handleScaleChange = (values: number[]) => {
     setGlobalScale(values[0]);
   };
-  
+
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
   };
-  
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
-    
+
     if (over && active.id !== over.id) {
       const oldIndex = matrices.findIndex(m => m.id === active.id);
       const newIndex = matrices.findIndex(m => m.id === over.id);
-      
+
       if (oldIndex !== -1 && newIndex !== -1) {
         // Reorder matrices in the store
         reorderMatrices(arrayMove(matrices, oldIndex, newIndex));
@@ -116,12 +103,12 @@ const Sidebar = () => {
   const activeMatrix = activeId ? matrices.find(m => m.id === activeId) : null;
 
   return (
-    <div className='h-screen p-4 overflow-y-auto max-w-96 min-w-96 flex flex-col backdrop-blur-lg bg-bg-200/30 border-r border-bg-300' id="sidebar">
+    <div className='h-screen p-4 overflow-y-auto max-w-96 min-w-96 flex flex-col backdrop-blur-lg bg-bg-200/30 border-r border-bg-300' id='sidebar'>
       <div className='flex-grow'>
         <h1 className='text-2xl font-bold text-primary-600 mb-4'>3D matrix transform visualizer!</h1>
 
         {/* Add new transformation */}
-        <div className='bg-bg-100 rounded-lg p-3 mb-4 flex flex-wrap gap-2 shadow-sm'>
+        <div className='bg-bg-100 rounded-lg p-3 mb-4 flex flex-wrap gap-2'>
           {matrixTypes.map(matrixType => (
             <Button key={matrixType.type} className='flex-1' variant='primary' onClick={() => handleAddMatrix(matrixType.type)}>
               {matrixType.name}
@@ -130,7 +117,7 @@ const Sidebar = () => {
         </div>
 
         {/* Global scale control */}
-        <div className='bg-bg-100 rounded-lg p-3 mb-4 shadow-sm'>
+        <div className='bg-bg-100 rounded-lg p-3 mb-4'>
           <Slider
             label='Global Contribution'
             value={[globalScale]}
@@ -151,10 +138,7 @@ const Sidebar = () => {
           onDragEnd={handleDragEnd}
           modifiers={[restrictToVerticalAxis]}
         >
-          <SortableContext 
-            items={matrices.map(m => m.id)}
-            strategy={verticalListSortingStrategy}
-          >
+          <SortableContext items={matrices.map(m => m.id)} strategy={verticalListSortingStrategy}>
             <div className='space-y-3'>
               {matrices.map(matrix => (
                 <SortableMatrixControl
@@ -167,23 +151,20 @@ const Sidebar = () => {
               ))}
             </div>
           </SortableContext>
-          
+
           {/* Drag overlay to show while dragging */}
           <DragOverlay>
             {activeMatrix ? (
-              <div className="opacity-80" style={{ width: '100%' }}>
+              <div className='opacity-80' style={{ width: "100%" }}>
                 {/* Override the matrix control to always be collapsed while dragging */}
-                <div className='bg-bg-100 rounded-lg shadow overflow-hidden'>
+                <div className='bg-bg-100 rounded-lg overflow-hidden'>
                   <div className='bg-primary-600 text-accent-50 p-3 flex justify-between items-center'>
                     <div className='flex items-center'>
                       <span className='font-bold mr-2'>{activeMatrix.id}</span>
-                      <span className="text-primary-200">{activeMatrix.name}</span>
+                      <span className='text-primary-200'>{activeMatrix.name}</span>
                     </div>
                     <div className='flex items-center'>
-                      <Button
-                        variant='ghost'
-                        className='p-1 hover:bg-primary-500 rounded invisible'
-                      >
+                      <Button variant='ghost' className='p-1 hover:bg-primary-500 rounded invisible'>
                         <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
                           <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
                         </svg>
@@ -226,7 +207,13 @@ const Sidebar = () => {
           </div>
           {matrices.length > 0 && (
             <div>
-              <span className='font-semibold'>Formula:</span> M = <span>{matrices.map(m => m.id).join("")}</span>
+              <span className='font-semibold'>Formula:</span> M ={" "}
+              <span>
+                {[...matrices]
+                  .reverse()
+                  .map(m => m.id)
+                  .join("")}
+              </span>
             </div>
           )}
         </div>
