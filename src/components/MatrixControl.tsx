@@ -3,6 +3,7 @@ import { Matrix3D, MatrixTransform, matrixValueOffsets } from "../types";
 import { getSliderProps } from "../utils/matrixUtils";
 import { createMatrix } from "./Scene";
 import { Slider } from "./ui/Slider";
+import { Button } from "./ui/Button";
 
 interface MatrixControlProps {
   matrix: MatrixTransform;
@@ -37,13 +38,14 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove }: MatrixControlProp
   return (
     <div className='bg-bg-100 rounded-lg shadow overflow-hidden'>
       {/* Header */}
-      <div className='bg-primary-600 text-white p-3 flex justify-between items-center cursor-pointer' onClick={() => setIsExpanded(!isExpanded)}>
+      <div className='bg-primary-600 text-accent-50 p-3 flex justify-between items-center cursor-pointer' onClick={() => setIsExpanded(!isExpanded)}>
         <div className='flex items-center'>
-          <span className='font-medium mr-2'>{matrix.id}.</span>
-          <span>{matrix.name}</span>
+          <span className='font-bold mr-2'>{matrix.id}</span>
+          <span className="text-primary-200">{matrix.name}</span>
         </div>
         <div className='flex items-center'>
-          <button
+          <Button
+            variant='ghost'
             className='p-1 hover:bg-primary-500 rounded'
             onClick={e => {
               e.stopPropagation();
@@ -53,7 +55,7 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove }: MatrixControlProp
             <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
             </svg>
-          </button>
+          </Button>
           <span className='ml-2'>
             {isExpanded ? (
               <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
