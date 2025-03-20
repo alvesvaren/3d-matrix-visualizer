@@ -85,7 +85,7 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove, dragHandleProps }: 
                       min={min}
                       max={max}
                       step={step}
-                      value={value}
+                      defaultValue={value}
                       onChange={e => handleValueChange(idx, parseFloat(e.target.value))}
                       className='w-full py-1 px-2 text-sm text-bg-700 bg-bg-50 border border-bg-200/70 rounded'
                     />

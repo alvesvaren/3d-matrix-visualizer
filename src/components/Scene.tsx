@@ -36,7 +36,7 @@ export const createMatrix = (transform: MatrixTransform): Matrix3D => {
       break;
     }
     case "custom": {
-      matrix.fromArray(transform.values);
+      matrix = matrix.fromArray(transform.values).transpose();
       matrix.fromArray(applyTransformationFactor(matrix, transform.factor).elements);
       break;
     }
