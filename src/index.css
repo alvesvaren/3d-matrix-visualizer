@@ -142,3 +142,15 @@
 .transition-spacing {
   transition-property: margin, padding;
 }
+
+/* Add CSS classes for bottom bar layout */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  max-height: 50%;
+  overflow-y: auto;
+  backdrop-blur-lg;
+  background-color: var(--color-bg-200, rgba(0, 0, 0, 0.3));
+  border-top: 1px solid var(--color-bg-300, rgba(255, 255, 255, 0.3));
+}

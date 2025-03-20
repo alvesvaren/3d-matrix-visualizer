@@ -60,17 +60,36 @@ export function useCSSVariable(variable: string) {
 
 export const useViewOffset = () => {
   const [viewOffset, setViewOffset] = useState({ offsetX: 0, offsetY: 0 });
+  const { width, height } = useScreenDimensions();
 
   useEffect(() => {
     const handleResize = () => {
-      const sidebarWidth = document.querySelector("#sidebar")?.clientWidth || 0;
-      setViewOffset({ offsetX: -sidebarWidth / 2, offsetY: 0 });
+      const sidebarSize = document.querySelector("#sidebar")?.clientWidth || 0;
+      const isVertical = width > height;
+      const offsetX = isVertical ? -sidebarSize / 2 : 0;
+      const offsetY = isVertical ? 0 : -sidebarSize / 2;
+      setViewOffset({ offsetX, offsetY });
     };
 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [width, height]);
 
   return viewOffset;
+};
+
+export const useScreenDimensions = () => {
+  const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return dimensions;
 };

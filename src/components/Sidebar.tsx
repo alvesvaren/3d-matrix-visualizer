@@ -3,7 +3,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
-import { useCombinedMatrix, useDeterminant, useMatrixContext, useSetPref } from "../store/hooks";
+import { useCombinedMatrix, useDeterminant, useMatrixContext, useSetPref, useScreenDimensions } from "../store/hooks";
 import { MatrixTransform, MatrixType } from "../types";
 import { getDefaultValues, getValueLabels, matrixTypes } from "../utils/matrixUtils";
 import MatrixControl, { MatrixGrid } from "./MatrixControl";
@@ -76,6 +76,10 @@ const Sidebar = () => {
   const determinant = useDeterminant();
   const combinedMatrix = useCombinedMatrix();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const { width, height } = useScreenDimensions();
+
+  const isVertical = width > height;
+  const maxSize = Math.min(width, height) * 0.5;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -127,7 +131,11 @@ const Sidebar = () => {
   const activeMatrix = activeId ? matrices.find(m => m.id === activeId) : null;
 
   return (
-    <div className='h-screen p-4 overflow-y-auto max-w-96 min-w-96 flex flex-col backdrop-blur-lg bg-bg-200/30 border-r border-bg-300' id='sidebar'>
+    <div
+      className={`p-4 overflow-y-auto flex flex-col backdrop-blur-lg bg-bg-200/30 border-bg-300 ${isVertical ? "h-screen max-w-96 min-w-96 border-r" : "w-screen max-h-96 min-h-96 border-t"}`}
+      id='sidebar'
+      style={{ maxWidth: maxSize, maxHeight: maxSize }}
+    >
       <div className='flex-grow'>
         <h1 className='text-2xl font-bold text-primary-600 mb-4'>3D matrix transform visualizer!</h1>
 
