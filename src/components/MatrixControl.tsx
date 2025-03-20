@@ -133,8 +133,9 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove, dragHandleProps }: 
 };
 
 export const MatrixGrid = ({ matrix }: { matrix: Matrix3D }) => {
+  // The matrix is stored in column-major order, so we need to display it with flow col
   const cells = Array.from(matrix.elements).map((value, idx) => <MatrixCell key={idx} value={value} />);
-  return <div className='grid grid-cols-4 gap-1 font-mono text-sm'>{cells}</div>;
+  return <div className='grid grid-rows-4 grid-flow-col gap-1 font-mono text-sm'>{cells}</div>;
 };
 
 // Component to display a single matrix cell value
