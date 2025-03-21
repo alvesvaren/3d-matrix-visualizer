@@ -74,7 +74,7 @@ const Axes = ({ transform }: { transform: THREE.Matrix4 }) => {
   const yLabelRef = useRef<THREE.Group>(null);
   const zLabelRef = useRef<THREE.Group>(null);
 
-  useFrame(() => {
+  useFrame(({ camera }) => {
     if (xAxisRef.current && yAxisRef.current && zAxisRef.current) {
       // Get transformed direction vectors
       const xDir = new THREE.Vector3(1, 0, 0).applyMatrix4(transform).normalize();
@@ -86,25 +86,32 @@ const Axes = ({ transform }: { transform: THREE.Matrix4 }) => {
       yAxisRef.current.setDirection(yDir);
       zAxisRef.current.setDirection(zDir);
 
-      // Scale the length
+      // Scale the length without stretching - use a fixed arrow size
       const xLength = new THREE.Vector3(1, 0, 0).applyMatrix4(transform).length();
       const yLength = new THREE.Vector3(0, 1, 0).applyMatrix4(transform).length();
       const zLength = new THREE.Vector3(0, 0, 1).applyMatrix4(transform).length();
 
-      xAxisRef.current.setLength(xLength);
-      yAxisRef.current.setLength(yLength);
-      zAxisRef.current.setLength(zLength);
+      // Set length for main axis but with fixed head size
+      xAxisRef.current.setLength(xLength, 0.1, 0.05);
+      yAxisRef.current.setLength(yLength, 0.1, 0.05);
+      zAxisRef.current.setLength(zLength, 0.1, 0.05);
 
       // Update label positions
       if (xLabelRef.current && yLabelRef.current && zLabelRef.current) {
-        // Position labels at the end of each axis
-        const xPos = xDir.clone().multiplyScalar(xLength * 1.1);
-        const yPos = yDir.clone().multiplyScalar(yLength * 1.1);
-        const zPos = zDir.clone().multiplyScalar(zLength * 1.1);
+        // Position labels at the end of each axis with fixed distance offset
+        const fixedOffset = 0.15; // Fixed distance from axis end
+        const xPos = xDir.clone().multiplyScalar(xLength + fixedOffset);
+        const yPos = yDir.clone().multiplyScalar(yLength + fixedOffset);
+        const zPos = zDir.clone().multiplyScalar(zLength + fixedOffset);
 
         xLabelRef.current.position.copy(xPos);
         yLabelRef.current.position.copy(yPos);
         zLabelRef.current.position.copy(zPos);
+
+        // Make labels face the camera
+        xLabelRef.current.lookAt(camera.position);
+        yLabelRef.current.lookAt(camera.position);
+        zLabelRef.current.lookAt(camera.position);
       }
     }
   });
@@ -137,13 +144,18 @@ const Axes = ({ transform }: { transform: THREE.Matrix4 }) => {
   );
 };
 
+const useGridColors = () => {
+  const gridMainColor = useCSSVariable("--color-bg-700");
+  const gridSectionColor = useCSSVariable("--color-primary-700");
+  return { gridMainColor, gridSectionColor };
+};
+
 // Component for drawing the transformed grid
 const TransformedGrid = ({ transform }: { transform: THREE.Matrix4 }) => {
-  const gridMainColor = useCSSVariable("--color-primary");
-  const gridSectionColor = useCSSVariable("--color-primary-700");
+  const { gridMainColor, gridSectionColor } = useGridColors();
   return (
     <group matrixAutoUpdate={false} matrix={transform}>
-      <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={10} fadeStrength={1} />
+      <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={7} fadeFrom={0} infiniteGrid />
     </group>
   );
 };
@@ -181,17 +193,28 @@ const Scene = () => {
 
   // Create a reference to allow orbit controls
   const orbitControlsRef = useRef(null);
-  const gridMainColor = useCSSVariable("--color-bg-500");
-  const gridSectionColor = useCSSVariable("--color-bg-700");
+
+  // Refs for original axis labels
+  const xOrigLabelRef = useRef<THREE.Group>(null);
+  const yOrigLabelRef = useRef<THREE.Group>(null);
+  const zOrigLabelRef = useRef<THREE.Group>(null);
+  const { gridMainColor, gridSectionColor } = useGridColors();
 
   // We have a sidebar that takes up 1/3 of the screen width
   // We want to offset the camera position so that the sidebar is visible
   const viewOffset = useViewOffset();
   const camera = useRef<THREE.PerspectiveCamera>(null);
 
-  useFrame(() => {
+  useFrame(({ camera: sceneCamera }) => {
     if (camera.current) {
       camera.current.setViewOffset(window.innerWidth, window.innerHeight, viewOffset.offsetX, viewOffset.offsetY, window.innerWidth, window.innerHeight);
+    }
+
+    // Make original axis labels face the camera
+    if (showLabels && xOrigLabelRef.current && yOrigLabelRef.current && zOrigLabelRef.current) {
+      xOrigLabelRef.current.lookAt(sceneCamera.position);
+      yOrigLabelRef.current.lookAt(sceneCamera.position);
+      zOrigLabelRef.current.lookAt(sceneCamera.position);
     }
   });
 
@@ -201,25 +224,29 @@ const Scene = () => {
       <OrbitControls ref={orbitControlsRef} />
 
       {/* Original grid and axes (before transformation) */}
-      {showOriginalGrid && (
-        <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={10} fadeStrength={1}>
-          <meshBasicMaterial transparent opacity={0.2} />
-        </Grid>
-      )}
+      {showOriginalGrid && <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={7} infiniteGrid fadeFrom={0} />}
       {showOriginalAxis && <axesHelper args={[1]} />}
 
       {/* Original axis labels */}
       {showLabels && (
         <>
-          <Text position={[1.1, 0, 0]} scale={[0.1, 0.1, 0.1]} color='red' anchorX='center' anchorY='middle'>
-            x
-          </Text>
-          <Text position={[0, 1.1, 0]} scale={[0.1, 0.1, 0.1]} color='green' anchorX='center' anchorY='middle'>
-            y
-          </Text>
-          <Text position={[0, 0, 1.1]} scale={[0.1, 0.1, 0.1]} color='blue' anchorX='center' anchorY='middle'>
-            z
-          </Text>
+          <group ref={xOrigLabelRef} position={[1.1, 0, 0]}>
+            <Text scale={[0.1, 0.1, 0.1]} color='red' anchorX='center' anchorY='middle'>
+              x
+            </Text>
+          </group>
+
+          <group ref={yOrigLabelRef} position={[0, 1.1, 0]}>
+            <Text scale={[0.1, 0.1, 0.1]} color='green' anchorX='center' anchorY='middle'>
+              y
+            </Text>
+          </group>
+
+          <group ref={zOrigLabelRef} position={[0, 0, 1.1]}>
+            <Text scale={[0.1, 0.1, 0.1]} color='blue' anchorX='center' anchorY='middle'>
+              z
+            </Text>
+          </group>
         </>
       )}
 
