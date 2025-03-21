@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Matrix3D, MatrixTransform, matrixValueOffsets } from "../types";
-import { getSliderProps } from "../utils/matrixUtils";
-import { createMatrix } from "./Scene";
+import { Matrix3D, MatrixTransform, } from "../types";
+import { createMatrix, getSliderProps, matrixValueOffsets } from "../utils/matrixUtils";
 import { Button } from "./ui/Button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger, TriggerIcon } from "./ui/Collapsible";
 import { Slider } from "./ui/Slider";
@@ -47,6 +46,7 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove, dragHandleProps }: 
         </div>
         <div className='flex items-center'>
           <Button
+            asChild
             variant='ghost'
             className='p-1 hover:bg-primary-500 rounded'
             onClick={e => {
@@ -54,9 +54,19 @@ const MatrixControl = ({ matrix, labels, onUpdate, onRemove, dragHandleProps }: 
               onRemove();
             }}
           >
-            <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
-            </svg>
+            <div
+              tabIndex={0}
+              onKeyDown={e => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onRemove();
+                }
+              }}
+            >
+              <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+              </svg>
+            </div>
           </Button>
           <TriggerIcon />
           <span className='ml-2 cursor-grab' title='Drag to reorder' onClick={e => e.stopPropagation()} {...dragHandleProps}>

@@ -54,19 +54,28 @@ export function useCSSVariable(variable: string) {
   return value;
 }
 
-export const useViewOffset = () => {
+export const useViewOffset = (isMobile: boolean) => {
   const [viewOffset, setViewOffset] = useState({ offsetX: 0, offsetY: 0 });
 
   useEffect(() => {
     const handleResize = () => {
-      const sidebarWidth = document.querySelector("#sidebar")?.clientWidth || 0;
-      setViewOffset({ offsetX: -sidebarWidth / 2, offsetY: 0 });
+      const sidebarElement = document.querySelector("#sidebar-container");
+      if (sidebarElement) {
+        const sidebarWidth = sidebarElement.clientWidth || 0;
+        const sidebarHeight = sidebarElement.clientHeight || 0;
+        console.log(sidebarWidth, sidebarHeight, isMobile);
+        if (!isMobile) {
+          setViewOffset({ offsetX: -sidebarWidth / 2, offsetY: 0 });
+        } else {
+          setViewOffset({ offsetX: 0, offsetY: sidebarHeight / 2 });
+        }
+      }
     };
 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isMobile]);
 
   return viewOffset;
 };

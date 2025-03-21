@@ -1,20 +1,42 @@
 import { Canvas } from "@react-three/fiber";
-import Sidebar from "./components/Sidebar";
+import { useEffect, useState } from "react";
 import Scene from "./components/Scene";
+import Sidebar from "./components/Sidebar";
+import { cn } from "./utils/cn";
+
+// Breakpoint for switching between sidebar and bottombar
+const MOBILE_BREAKPOINT = 768; // px
 
 function App() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check initial screen size
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
+
+    checkScreenSize();
+
+    // Add resize listener
+    window.addEventListener("resize", checkScreenSize);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
+
   return (
-    <div className="relative h-screen bg-bg-100">
-      {/* The viewport container takes full width and height */}
-      <div className="h-full w-full flex items-center justify-center">
-        <Canvas camera={{ position: [3, 3, 3] }}>
-          <Scene />
+    <div className='relative h-screen bg-bg-100'>
+      {/* The viewport container takes full height */}
+      <div className='w-full h-full' id='canvas-container'>
+        <Canvas>
+          <Scene isMobile={isMobile} />
         </Canvas>
       </div>
-      
-      {/* Sidebar positioned absolutely on top of the viewport */}
-      <div className="absolute top-0 left-0 h-full">
-        <Sidebar />
+
+      {/* Responsive sidebar/bottombar */}
+      <div className={cn("absolute left-0 bottom-0 overflow-y-auto", isMobile ? "w-full h-[50vh]" : "top-0 h-full")} id='sidebar-container'>
+        <Sidebar isMobile={isMobile} />
       </div>
     </div>
   );

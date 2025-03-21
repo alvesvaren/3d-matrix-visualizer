@@ -2,6 +2,8 @@ import { closestCenter, DndContext, DragEndEvent, DragOverlay, DragStartEvent, K
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import * as Popover from "@radix-ui/react-popover";
+import { Plus, Settings } from "lucide-react";
 import { useState } from "react";
 import { useCombinedMatrix, useDeterminant, useMatrixContext } from "../store/hooks";
 import { useMatrixStore } from "../store/matrixStore";
@@ -10,7 +12,6 @@ import { getDefaultValues, getValueLabels, matrixTypes } from "../utils/matrixUt
 import MatrixControl, { MatrixGrid } from "./MatrixControl";
 import { Button } from "./ui/Button";
 import { Checkbox } from "./ui/Checkbox";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger, TriggerIcon } from "./ui/Collapsible";
 import { Slider } from "./ui/Slider";
 
 // No M because it's used in the result
@@ -44,30 +45,97 @@ const SortableMatrixControl = ({ matrix, labels, onUpdate, onRemove }: SortableM
 const Prefs = () => {
   const setPref = useMatrixStore(state => state.setPref);
   const prefs = useMatrixStore(state => state.prefs);
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className='mb-4'>
-      <Collapsible className='group' open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger>
-          <span>Visualization Settings</span>
-
-          <TriggerIcon />
-        </CollapsibleTrigger>
-        <CollapsibleContent className="p-4">
-          <Checkbox label='Show Original Axes' id='originalAxis' onCheckedChange={checked => setPref("originalAxis", !!checked)} defaultChecked={prefs.originalAxis} />
-          <Checkbox label='Show Transformed Axes' id='transformedAxis' onCheckedChange={checked => setPref("transformedAxis", !!checked)} defaultChecked={prefs.transformedAxis} />
-          <Checkbox label='Show Labels' id='labels' onCheckedChange={checked => setPref("labels", !!checked)} defaultChecked={prefs.labels} />
-          <Checkbox label='Show Determinant' id='determinant' onCheckedChange={checked => setPref("determinant", !!checked)} defaultChecked={prefs.determinant} />
-          <Checkbox label='Show Original Grid' id='originalGrid' onCheckedChange={checked => setPref("originalGrid", !!checked)} defaultChecked={prefs.originalGrid} />
-          <Checkbox label='Show Transformed Grid' id='transformedGrid' onCheckedChange={checked => setPref("transformedGrid", !!checked)} defaultChecked={prefs.transformedGrid} />
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <Button className='flex items-center justify-center text-text-950' variant='ghost'>
+          <Settings size={16} />
+        </Button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content className='bg-bg-100 p-4 rounded-md shadow-md border border-bg-300 w-64 z-50'>
+          <h3 className='font-semibold mb-3 text-text-950'>Visualization Settings</h3>
+          <div className='space-y-2'>
+            <Checkbox
+              label='Show Original Axes'
+              id='originalAxis'
+              onCheckedChange={checked => setPref("originalAxis", !!checked)}
+              defaultChecked={prefs.originalAxis}
+            />
+            <Checkbox
+              label='Show Transformed Axes'
+              id='transformedAxis'
+              onCheckedChange={checked => setPref("transformedAxis", !!checked)}
+              defaultChecked={prefs.transformedAxis}
+            />
+            <Checkbox label='Show Labels' id='labels' onCheckedChange={checked => setPref("labels", !!checked)} defaultChecked={prefs.labels} />
+            <Checkbox
+              label='Show Determinant'
+              id='determinant'
+              onCheckedChange={checked => setPref("determinant", !!checked)}
+              defaultChecked={prefs.determinant}
+            />
+            <Checkbox
+              label='Show Original Grid'
+              id='originalGrid'
+              onCheckedChange={checked => setPref("originalGrid", !!checked)}
+              defaultChecked={prefs.originalGrid}
+            />
+            <Checkbox
+              label='Show Transformed Grid'
+              id='transformedGrid'
+              onCheckedChange={checked => setPref("transformedGrid", !!checked)}
+              defaultChecked={prefs.transformedGrid}
+            />
+          </div>
+          <Popover.Arrow className='fill-bg-100' />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 };
 
-const Sidebar = () => {
+const AddMatrixButton = ({ onAddMatrix }: { onAddMatrix: (type: MatrixType) => void }) => {
+  return (
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <Button className='flex items-center justify-center' variant='primary'>
+          <Plus size={16} className='mr-2' />
+          <span>Add Matrix</span>
+        </Button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content collisionPadding={16} className='bg-bg-100 p-2 rounded-md shadow-md border border-bg-300 w-64 z-50'>
+          <div className='flex flex-col space-y-1'>
+            {matrixTypes.map(matrixType => (
+              <Popover.Close asChild key={matrixType.type}>
+                <Button
+                  variant='secondary'
+                  onClick={() => {
+                    onAddMatrix(matrixType.type);
+                  }}
+                  className='justify-start text-left'
+                >
+                  <matrixType.icon size={16} className='mr-2' />
+                  {matrixType.name}
+                </Button>
+              </Popover.Close>
+            ))}
+          </div>
+          <Popover.Arrow className='fill-bg-100' />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+};
+
+// Component interfaces
+interface SidebarProps {
+  isMobile?: boolean;
+}
+
+const Sidebar = ({ isMobile = false }: SidebarProps) => {
   const { matrices, globalScale, addMatrix, removeMatrix, updateMatrix, setGlobalScale, reorderMatrices } = useMatrixContext();
   const usedIds = matrices.map(m => m.id);
   const determinant = useDeterminant();
@@ -124,21 +192,35 @@ const Sidebar = () => {
   const activeMatrix = activeId ? matrices.find(m => m.id === activeId) : null;
 
   return (
-    <div className='h-screen p-4 overflow-y-auto max-w-96 min-w-96 flex flex-col backdrop-blur-lg bg-bg-200/30 border-r border-bg-300' id='sidebar'>
+    <div
+      className={`
+        p-4 overflow-y-auto backdrop-blur-lg bg-bg-200/30
+        ${isMobile ? "h-full w-full border-t border-bg-300" : "h-screen max-w-96 min-w-96 border-r border-bg-300"}
+        flex flex-col
+      `}
+      id='sidebar'
+    >
       <div className='flex-grow'>
-        <h1 className='text-2xl font-bold text-primary-600 mb-4'>3D matrix transform visualizer!</h1>
+        {/* Responsive header */}
+        <h1 className={`font-bold text-primary-600 mb-4 ${isMobile ? "text-xl" : "text-2xl"}`}>3D matrix transform visualizer!</h1>
 
-        {/* Add new transformation */}
-        <div className='mb-4 flex flex-wrap gap-2'>
-          {matrixTypes.map(matrixType => (
-            <Button key={matrixType.type} className='flex-1' variant='primary' onClick={() => handleAddMatrix(matrixType.type)}>
-              {matrixType.name}
-            </Button>
-          ))}
+        {/* Add matrix and settings buttons */}
+        <div className='mb-4 flex justify-between gap-2'>
+          <div className='flex gap-2'>
+            <AddMatrixButton onAddMatrix={handleAddMatrix} />
+            {matrices.length > 0 && (
+              <Button
+                variant='secondary'
+                onClick={() => {
+                  matrices.forEach(m => removeMatrix(m.id));
+                }}
+              >
+                Clear All
+              </Button>
+            )}
+          </div>
+          <Prefs />
         </div>
-
-        {/* Preferences section */}
-        <Prefs />
 
         {/* Global scale control */}
         <div className='bg-bg-100 rounded-sm p-3 mb-4'>
@@ -212,36 +294,27 @@ const Sidebar = () => {
         </DndContext>
       </div>
 
-      {matrices.length > 0 && (
-        <Button
-          variant='accent'
-          fullWidth
-          className='mt-4'
-          onClick={() => {
-            matrices.forEach(m => removeMatrix(m.id));
-          }}
-        >
-          Clear All
-        </Button>
-      )}
-      <div className='mt-4 pt-4 border-t border-bg-300'>
-        <div className='text-center mb-2 text-sm text-bg-700 flex flex-col justify-center items-center'>
-          <div>
-            <span className='font-semibold'>Determinant:</span> {determinant.toFixed(2)}
-          </div>
-          {matrices.length > 0 && (
+      {/* Bottom section with actions and matrix display */}
+      <div className='flex flex-col'>
+        <div className='mt-2 pt-4 border-t border-bg-300'>
+          <div className='text-center mb-2 text-sm text-bg-700 flex flex-col justify-center items-center'>
             <div>
-              <span className='font-semibold'>Formula:</span> M ={" "}
-              <span>
-                {[...matrices]
-                  .reverse()
-                  .map(m => m.id)
-                  .join("")}
-              </span>
+              <span className='font-semibold'>Determinant:</span> {determinant.toFixed(2)}
             </div>
-          )}
+            {matrices.length > 0 && (
+              <div>
+                <span className='font-semibold'>Formula:</span> M ={" "}
+                <span>
+                  {[...matrices]
+                    .reverse()
+                    .map(m => m.id)
+                    .join("")}
+                </span>
+              </div>
+            )}
+          </div>
+          <MatrixGrid matrix={combinedMatrix} />
         </div>
-        <MatrixGrid matrix={combinedMatrix} />
       </div>
     </div>
   );

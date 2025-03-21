@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { applyTransformationFactor, createMatrix } from "../components/Scene";
-import { Matrix3D, MatrixTransform, calculateDeterminant, createIdentityMatrix, multiplyMatrices } from "../types";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { Matrix3D, MatrixTransform } from "../types";
+import { applyTransformationFactor, calculateDeterminant, createIdentityMatrix, createMatrix, multiplyMatrices } from "../utils/matrixUtils";
 
 export interface MatrixState {
   matrices: MatrixTransform[];

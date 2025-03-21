@@ -3,62 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
 import { useCombinedMatrix, useCSSVariable, usePref, useViewOffset } from "../store/hooks";
-import { Matrix3D, MatrixTransform, createIdentityMatrix, matrixValueOffsets } from "../types";
 
-const degToRad = (deg: number) => deg * (Math.PI / 180);
-
-// Helper function to create a matrix from a transform
-export const createMatrix = (transform: MatrixTransform): Matrix3D => {
-  let matrix = new THREE.Matrix4();
-
-  const factoredValues = transform.values.map(value => value * transform.factor + matrixValueOffsets[transform.type]);
-
-  switch (transform.type) {
-    case "scale": {
-      const [x, y, z] = factoredValues;
-      matrix.makeScale(x, y, z);
-      break;
-    }
-    case "rotate": {
-      const [angleX, angleY, angleZ] = factoredValues;
-      const euler = new THREE.Euler(degToRad(angleX), degToRad(angleY), degToRad(angleZ));
-      matrix.makeRotationFromEuler(euler);
-      break;
-    }
-    case "translate": {
-      const [x, y, z] = factoredValues;
-      matrix.makeTranslation(x, y, z);
-      break;
-    }
-    case "shear": {
-      const [xy, xz, yx, yz, zx, zy] = factoredValues;
-      matrix.makeShear(xy, xz, yx, yz, zx, zy);
-      break;
-    }
-    case "custom": {
-      matrix = matrix.fromArray(transform.values).transpose();
-      matrix.fromArray(applyTransformationFactor(matrix, transform.factor).elements);
-      break;
-    }
-  }
-  return matrix;
-};
-
-// Apply transformation factor (interpolate between identity and full transformation)
-export const applyTransformationFactor = (matrix: Matrix3D, factor: number): Matrix3D => {
-  if (factor === 1) return matrix; // No change needed at 100%
-  if (factor === 0) return createIdentityMatrix(); // Return identity at 0%
-
-  // Create interpolated matrix by linear interpolation between identity and full transform
-  const identity = createIdentityMatrix();
-  const result = Array(16).fill(0);
-
-  for (let i = 0; i < 16; i++) {
-    result[i] = identity.elements[i] * (1 - factor) + matrix.elements[i] * factor;
-  }
-
-  return { elements: result };
-};
 
 // Component for drawing coordinate axes
 const Axes = ({ transform }: { transform: THREE.Matrix4 }) => {
@@ -180,7 +125,12 @@ const TransformCube = ({ transform }: { transform: THREE.Matrix4 }) => {
   );
 };
 
-const Scene = () => {
+// Component types
+interface SceneProps {
+  isMobile?: boolean;
+}
+
+const Scene = ({ isMobile = false }: SceneProps) => {
   const combinedMatrix = useCombinedMatrix();
   const showOriginalAxis = usePref("originalAxis");
   const showTransformedAxis = usePref("transformedAxis");
@@ -202,12 +152,13 @@ const Scene = () => {
 
   // We have a sidebar that takes up 1/3 of the screen width
   // We want to offset the camera position so that the sidebar is visible
-  const viewOffset = useViewOffset();
+  const viewOffset = useViewOffset(isMobile);
   const camera = useRef<THREE.PerspectiveCamera>(null);
 
   useFrame(({ camera: sceneCamera }) => {
     if (camera.current) {
-      camera.current.setViewOffset(window.innerWidth, window.innerHeight, viewOffset.offsetX, viewOffset.offsetY, window.innerWidth, window.innerHeight);
+      // Horizontal sidebar - adjust X offset
+      camera.current.setViewOffset(window.innerWidth, window.innerHeight, viewOffset.offsetX, viewOffset.offsetY, window.innerWidth, window.outerHeight);
     }
 
     // Make original axis labels face the camera
@@ -224,7 +175,9 @@ const Scene = () => {
       <OrbitControls ref={orbitControlsRef} />
 
       {/* Original grid and axes (before transformation) */}
-      {showOriginalGrid && <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={7} infiniteGrid fadeFrom={0} />}
+      {showOriginalGrid && (
+        <Grid args={[10, 10]} position={[0, 0, 0]} cellColor={gridMainColor} sectionColor={gridSectionColor} fadeDistance={7} infiniteGrid fadeFrom={0} />
+      )}
       {showOriginalAxis && <axesHelper args={[1]} />}
 
       {/* Original axis labels */}
