@@ -63,7 +63,7 @@ export const useViewOffset = (isMobile: boolean) => {
       if (sidebarElement) {
         const sidebarWidth = sidebarElement.clientWidth || 0;
         const sidebarHeight = sidebarElement.clientHeight || 0;
-        console.log(sidebarWidth, sidebarHeight, isMobile);
+
         if (!isMobile) {
           setViewOffset({ offsetX: -sidebarWidth / 2, offsetY: 0 });
         } else {
