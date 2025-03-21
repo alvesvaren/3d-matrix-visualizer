@@ -41,10 +41,6 @@ export const useMatrixContext = () => {
 };
 
 export const usePref = (pref: keyof MatrixState["prefs"]) => useMatrixStore(state => state.prefs[pref]);
-export const useSetPref = (pref: keyof MatrixState["prefs"]) => {
-  const func = useMatrixStore(state => state.setPref);
-  return (state: boolean) => func(pref, state);
-};
 
 export function useCSSVariable(variable: string) {
   const [value, setValue] = useState(getComputedStyle(document.documentElement).getPropertyValue(variable));

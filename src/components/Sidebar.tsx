@@ -3,7 +3,8 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
-import { useCombinedMatrix, useDeterminant, useMatrixContext, useSetPref } from "../store/hooks";
+import { useCombinedMatrix, useDeterminant, useMatrixContext } from "../store/hooks";
+import { useMatrixStore } from "../store/matrixStore";
 import { MatrixTransform, MatrixType } from "../types";
 import { getDefaultValues, getValueLabels, matrixTypes } from "../utils/matrixUtils";
 import MatrixControl, { MatrixGrid } from "./MatrixControl";
@@ -41,12 +42,8 @@ const SortableMatrixControl = ({ matrix, labels, onUpdate, onRemove }: SortableM
 };
 
 const Prefs = () => {
-  const setOriginalAxis = useSetPref("originalAxis");
-  const setTransformedAxis = useSetPref("transformedAxis");
-  const setLabels = useSetPref("labels");
-  const setDeterminant = useSetPref("determinant");
-  const setOriginalGrid = useSetPref("originalGrid");
-  const setTransformedGrid = useSetPref("transformedGrid");
+  const setPref = useMatrixStore(state => state.setPref);
+  const prefs = useMatrixStore(state => state.prefs);
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -58,12 +55,12 @@ const Prefs = () => {
           <TriggerIcon />
         </CollapsibleTrigger>
         <CollapsibleContent className="p-4">
-          <Checkbox label='Show Original Axes' id='originalAxis' onCheckedChange={checked => setOriginalAxis(!!checked)} defaultChecked />
-          <Checkbox label='Show Transformed Axes' id='transformedAxis' onCheckedChange={checked => setTransformedAxis(!!checked)} defaultChecked />
-          <Checkbox label='Show Labels' id='labels' onCheckedChange={checked => setLabels(!!checked)} defaultChecked />
-          <Checkbox label='Show Determinant' id='determinant' onCheckedChange={checked => setDeterminant(!!checked)} defaultChecked />
-          <Checkbox label='Show Original Grid' id='originalGrid' onCheckedChange={checked => setOriginalGrid(!!checked)} defaultChecked />
-          <Checkbox label='Show Transformed Grid' id='transformedGrid' onCheckedChange={checked => setTransformedGrid(!!checked)} defaultChecked />
+          <Checkbox label='Show Original Axes' id='originalAxis' onCheckedChange={checked => setPref("originalAxis", !!checked)} defaultChecked={prefs.originalAxis} />
+          <Checkbox label='Show Transformed Axes' id='transformedAxis' onCheckedChange={checked => setPref("transformedAxis", !!checked)} defaultChecked={prefs.transformedAxis} />
+          <Checkbox label='Show Labels' id='labels' onCheckedChange={checked => setPref("labels", !!checked)} defaultChecked={prefs.labels} />
+          <Checkbox label='Show Determinant' id='determinant' onCheckedChange={checked => setPref("determinant", !!checked)} defaultChecked={prefs.determinant} />
+          <Checkbox label='Show Original Grid' id='originalGrid' onCheckedChange={checked => setPref("originalGrid", !!checked)} defaultChecked={prefs.originalGrid} />
+          <Checkbox label='Show Transformed Grid' id='transformedGrid' onCheckedChange={checked => setPref("transformedGrid", !!checked)} defaultChecked={prefs.transformedGrid} />
         </CollapsibleContent>
       </Collapsible>
     </div>
